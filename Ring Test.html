@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>নাইট্রেট বলয় পরীক্ষা — AB Solution</title>
+<style>
+:root {
+  --bg-deep: #050814;
+  --panel-bg: rgba(13, 20, 38, 0.75);
+  --panel-border: rgba(56, 189, 248, 0.22);
+  --panel-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.65);
+  --glass-blur: blur(18px);
+  --text-main: #f1f5f9;
+  --text-dim: #94a3b8;
+  --accent-cyan: #38bdf8;
+  --accent-emerald: #34d399;
+  --accent-amber: #fbbf24;
+
+  /* Responsive Simulation Measurements */
+  --stage-height: 600px;
+  --tube-w: 78px;
+  --tube-h: 430px;
+  --tube-rim-w: 84px;
+  --dropper-w: 14px;
+  --dropper-h: 160px;
+  --bulb-w: 22px;
+  --bulb-h: 25px;
+
+  /* Liquid Targets */
+  --h-step1: 85px;
+  --h-step2: 165px;
+  --h-acid: 115px;
+  --h-ring: 18px;
+
+  /* Indicator Vertical Alignments */
+  --pos-ind-solution: 310px;
+  --pos-ind-ring: 395px;
+  --pos-ind-acid: 480px;
+
+  /* Dropper Positions */
+  --drop-rest-top: 20px;
+  --drop-rest-right: 55px;
+  --drop-pour-top: 50px;
+  --drop-pour-right: 88px;
+  --trickle-h: 55px;
+}
+
+/* Mobile Adaptive Breakpoint (<= 768px) */
+@media (max-width: 768px) {
+  :root {
+    --stage-height: 350px;
+    --tube-w: 54px;
+    --tube-h: 250px;
+    --tube-rim-w: 58px;
+    --dropper-w: 11px;
+    --dropper-h: 110px;
+    --bulb-w: 17px;
+    --bulb-h: 19px;
+
+    --h-step1: 50px;
+    --h-step2: 100px;
+    --h-acid: 65px;
+    --h-ring: 12px;
+
+    --pos-ind-solution: 175px;
+    --pos-ind-ring: 222px;
+    --pos-ind-acid: 270px;
+
+    --drop-rest-top: 18px;
+    --drop-rest-right: 50px;
+    --drop-pour-top: 35px;
+    --drop-pour-right: 68px;
+    --trickle-h: 35px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Bengali', Roboto, sans-serif;
+  background-color: var(--bg-deep);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.9) 0px, transparent 100%);
+  color: var(--text-main);
+  padding: clamp(10px, 2.5vw, 24px);
+}
+
+.app {
+  max-width: 1060px;
+  margin: auto;
+}
+
+header {
+  text-align: center;
+  margin-bottom: clamp(12px, 2.5vw, 22px);
+}
+
+.badge-tag {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  font-size: clamp(10px, 1.4vw, 12px);
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+h1 {
+  font-size: clamp(20px, 3.8vw, 34px);
+  margin: 0 0 4px;
+  background: linear-gradient(135deg, #e0f2fe 20%, #38bdf8 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.subtitle {
+  color: var(--text-dim);
+  font-size: clamp(12px, 1.6vw, 14.5px);
+}
+
+/* Fluid Layout Grid */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: clamp(12px, 2vw, 20px);
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Glassmorphism Containers */
+.glass {
+  background: var(--panel-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--panel-border);
+  border-radius: clamp(14px, 2vw, 20px);
+  box-shadow: var(--panel-glow);
+}
+
+/* Experiment Stage */
+.stage {
+  position: relative;
+  height: var(--stage-height);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+/* Watermark */
+.watermark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-24deg);
+  font-size: clamp(40px, 8vw, 88px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.05);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 5;
+  text-transform: uppercase;
+}
+
+/* Tube Assembly */
+.tube-assembly {
+  position: relative;
+  width: var(--tube-w);
+  height: var(--tube-h);
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+
+.test-tube {
+  position: absolute;
+  bottom: 8px;
+  width: var(--tube-w);
+  height: var(--tube-h);
+  border-left: 2.5px solid rgba(255, 255, 255, 0.45);
+  border-right: 2.5px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 3.5px solid rgba(255, 255, 255, 0.55);
+  border-top: none;
+  border-radius: 0 0 calc(var(--tube-w) / 2) calc(var(--tube-w) / 2);
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0.08) 0%, 
+    rgba(255,255,255,0.02) 20%, 
+    rgba(255,255,255,0.01) 75%, 
+    rgba(255,255,255,0.09) 100%);
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.08), 0 16px 32px rgba(0,0,0,0.6);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.test-tube::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc((var(--tube-w) - var(--tube-rim-w)) / 2);
+  width: var(--tube-rim-w);
+  height: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  box-sizing: border-box;
+}
+
+.test-tube::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 5px;
+  width: 3px;
+  height: calc(var(--tube-h) - 40px);
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.02));
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Liquids */
+.liquid {
+  width: 100%;
+  transition: height 1s cubic-bezier(0.33, 1, 0.68, 1), background-color 0.6s ease;
+  position: relative;
+}
+
+.liquid-acid {
+  height: 0px;
+  background: linear-gradient(180deg, rgba(220, 235, 245, 0.35) 0%, rgba(180, 205, 225, 0.6) 100%);
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.25);
+}
+
+.brown-ring {
+  position: absolute;
+  width: 100%;
+  height: 0px;
+  bottom: 0px;
+  opacity: 0;
+  background: radial-gradient(ellipse at 50% 50%, #2e1003 0%, #632709 50%, #351404 85%);
+  box-shadow: 0 0 16px rgba(130, 48, 12, 0.9);
+  border-top: 1px dashed rgba(245, 158, 11, 0.45);
+  border-bottom: 1px dashed rgba(245, 158, 11, 0.45);
+  z-index: 12;
+  transition: height 0.8s ease, bottom 1s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.7s ease;
+}
+
+.liquid-sample {
+  height: 0px;
+  background: rgba(224, 242, 254, 0.2);
+}
+
+/* Dropper */
+.dropper {
+  position: absolute;
+  top: var(--drop-rest-top);
+  right: var(--drop-rest-right);
+  width: var(--dropper-w);
+  height: var(--dropper-h);
+  background: linear-gradient(90deg, rgba(255,255,255,0.65), rgba(255,255,255,0.2));
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 0 0 4px 4px;
+  transform: rotate(-30deg);
+  opacity: 0;
+  transition: all 0.5s ease;
+  z-index: 30;
+}
+.dropper::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--bulb-h) * -0.9);
+  left: calc((var(--dropper-w) - var(--bulb-w)) / 2);
+  width: var(--bulb-w);
+  height: var(--bulb-h);
+  background: #e11d48;
+  border-radius: 50% 50% 20% 20%;
+  box-shadow: 0 0 8px rgba(225, 29, 72, 0.6);
+}
+.dropper-trickle {
+  position: absolute;
+  width: 2px;
+  height: 0px;
+  background: rgba(255, 255, 255, 0.7);
+  bottom: -32px;
+  left: calc(50% - 1px);
+  opacity: 0;
+  transition: height 0.3s ease, opacity 0.3s ease;
+}
+
+/* Floating Layer Labels */
+.layer-indicator {
+  position: absolute;
+  right: clamp(6px, 2vw, 18px);
+  padding: clamp(4px, 1vw, 6px) clamp(8px, 1.5vw, 12px);
+  background: rgba(10, 16, 31, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  font-size: clamp(10px, 1.4vw, 12px);
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.4s ease;
+  z-index: 20;
+  white-space: nowrap;
+}
+.layer-indicator.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+.layer-indicator::before {
+  content: "⮜ ";
+}
+.ind-solution { top: var(--pos-ind-solution); color: var(--accent-emerald); border-left: 3px solid var(--accent-emerald); }
+.ind-ring { top: var(--pos-ind-ring); color: #fb923c; border-left: 3px solid #fb923c; }
+.ind-acid { top: var(--pos-ind-acid); color: #bae6fd; border-left: 3px solid #bae6fd; }
+
+/* Control Panel */
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.8vw, 16px);
+}
+
+.panel-card {
+  padding: clamp(12px, 1.8vw, 18px);
+}
+
+.card-title {
+  font-size: clamp(10.5px, 1.3vw, 12px);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.status-log {
+  font-size: clamp(12px, 1.6vw, 14px);
+  line-height: 1.55;
+  border-left: 3px solid var(--accent-cyan);
+  padding-left: 10px;
+}
+
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: clamp(10px, 1.5vw, 12px);
+  color: var(--text-main);
+  text-align: left;
+  font-size: clamp(11.5px, 1.5vw, 13px);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  min-height: 44px; /* Touch friendliness */
+  transition: all 0.2s ease;
+}
+.step-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.step-btn.active {
+  border-color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.18);
+}
+.step-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+button.primary-btn, button.secondary-btn {
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: clamp(12px, 1.5vw, 13.5px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button.primary-btn {
+  flex: 1.4;
+  background: linear-gradient(135deg, #0284c7, #6366f1);
+  border: 1px solid #38bdf8;
+  color: #fff;
+}
+button.primary-btn:hover {
+  filter: brightness(1.15);
+}
+
+button.secondary-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-dim);
+}
+
+/* Formula Container */
+.formula-box {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: clamp(11px, 1.4vw, 12.5px);
+}
+.chem-eq {
+  font-family: monospace;
+  font-size: clamp(10.5px, 1.3vw, 11.5px);
+  color: #7dd3fc;
+  display: block;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 6px 8px;
+  border-radius: 6px;
+  border-left: 2px solid var(--accent-cyan);
+  margin: 4px 0 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.chem-name {
+  color: #fbbf24;
+  font-size: clamp(10.5px, 1.3vw, 11.5px);
+  display: block;
+  line-height: 1.4;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="badge-tag">Responsive Chemical Analysis</div>
+    <h1>নাইট্রেট বলয় পরীক্ষা (Brown Ring Test)</h1>
+    <div class="subtitle">NO<sub>3</sub><sup>−</sup> শনাক্তকরণের ডাইনামিক সিমুলেশন</div>
+  </header>
+
+  <div class="layout">
+    <!-- Test Tube Simulation Stage -->
+    <section class="stage glass">
+      <div class="watermark">AB Solution</div>
+
+      <!-- Floating Labels -->
+      <div class="layer-indicator ind-solution" id="indSolution">NO<sub>3</sub><sup>−</sup> + Fe<sup>2+</sup> দ্রবণ</div>
+      <div class="layer-indicator ind-ring" id="indRing">[Fe(H<sub>2</sub>O)<sub>5</sub>(NO)]<sup>2+</sup> (বলয়)</div>
+      <div class="layer-indicator ind-acid" id="indAcid">গাঢ় H<sub>2</sub>SO<sub>4</sub> (ভারী স্তর)</div>
+
+      <!-- Pipette / Dropper -->
+      <div class="dropper" id="dropper">
+        <div class="dropper-trickle" id="dropperTrickle"></div>
+      </div>
+
+      <!-- Tube & Solution Container -->
+      <div class="tube-assembly">
+        <div class="test-tube">
+          <div class="liquid liquid-acid" id="acidLayer"></div>
+          <div class="brown-ring" id="ringLayer"></div>
+          <div class="liquid liquid-sample" id="sampleLayer"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Dashboard Side -->
+    <aside class="side-panel">
+      <!-- Live Status -->
+      <div class="panel-card glass">
+        <div class="card-title">পর্যবেক্ষণ ও স্থিতি (Live Observation)</div>
+        <div class="status-log" id="statusLog">
+          পরীক্ষা প্রস্তুত। নিচের ধাপভিত্তিক বোতাম চাপুন অথবা সম্পূর্ণ অটো চালান।
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="panel-card glass">
+        <div class="card-title">পরীক্ষার ধাপসমূহ (Procedure)</div>
+        <div class="steps-container">
+          <button class="step-btn" id="s1" onclick="applyStep(1)">
+            <span class="step-num">১</span>
+            <span>নমুনার দ্রবণ যোগ (NO<sub>3</sub><sup>−</sup> সল্ট)</span>
+          </button>
+          <button class="step-btn" id="s2" onclick="applyStep(2)" disabled>
+            <span class="step-num">২</span>
+            <span>সদ্য প্রস্তুত FeSO<sub>4</sub> দ্রবণ যোগ</span>
+          </button>
+          <button class="step-btn" id="s3" onclick="applyStep(3)" disabled>
+            <span class="step-num">৩</span>
+            <span>দেয়াল বেয়ে গাঢ় H<sub>2</sub>SO<sub>4</sub> চালনা</span>
+          </button>
+        </div>
+
+        <div class="action-row">
+          <button class="primary-btn" id="autoBtn" onclick="toggleRunAuto()">▶ সম্পূর্ণ পরীক্ষা চালান</button>
+          <button class="secondary-btn" onclick="resetAll()">↺ রিসেট</button>
+        </div>
+      </div>
+
+      <!-- Mechanism Card -->
+      <div class="panel-card glass">
+        <div class="card-title">বিক্রিয়া সমীকরণ (Mechanism)</div>
+        <div class="formula-box">
+          <b>১. বিজারণ ও NO উৎপাদন:</b>
+          <span class="chem-eq">NO<sub>3</sub><sup>−</sup> + 3Fe<sup>2+</sup> + 4H<sup>+</sup> → NO + 3Fe<sup>3+</sup> + 2H<sub>2</sub>O</span>
+
+          <b>২. বাদামি বলয় গঠন:</b>
+          <span class="chem-eq">[Fe(H<sub>2</sub>O)<sub>6</sub>]<sup>2+</sup> + NO → [Fe(H<sub>2</sub>O)<sub>5</sub>(NO)]<sup>2+</sup> + H<sub>2</sub>O</span>
+          <span class="chem-name">বাদামি বলয়: <b>পেন্টাঅ্যাকোয়াইনাইট্রোসিলআয়রন (I) সালফেট</b></span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  let stage = 0;
+  let autoTimer = null;
+  let isAuto = false;
+
+  const sampleLayer = document.getElementById("sampleLayer");
+  const acidLayer = document.getElementById("acidLayer");
+  const ringLayer = document.getElementById("ringLayer");
+  const dropper = document.getElementById("dropper");
+  const dropperTrickle = document.getElementById("dropperTrickle");
+
+  const indSolution = document.getElementById("indSolution");
+  const indRing = document.getElementById("indRing");
+  const indAcid = document.getElementById("indAcid");
+  const statusLog = document.getElementById("statusLog");
+
+  const s1 = document.getElementById("s1");
+  const s2 = document.getElementById("s2");
+  const s3 = document.getElementById("s3");
+  const autoBtn = document.getElementById("autoBtn");
+
+  // Read current CSS variables dynamically on screen resize or step execution
+  function getCSSVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function syncLiquidLevels() {
+    if (stage === 1) {
+      sampleLayer.style.height = getCSSVar('--h-step1');
+    } else if (stage === 2) {
+      sampleLayer.style.height = getCSSVar('--h-step2');
+    } else if (stage === 3) {
+      sampleLayer.style.height = getCSSVar('--h-step2');
+      acidLayer.style.height = getCSSVar('--h-acid');
+      ringLayer.style.bottom = getCSSVar('--h-acid');
+      ringLayer.style.height = getCSSVar('--h-ring');
+    }
+  }
+
+  window.addEventListener('resize', syncLiquidLevels);
+
+  window.applyStep = function(step) {
+    stage = step;
+    refreshNav();
+
+    if (step === 1) {
+      statusLog.innerHTML = "<b>ধাপ ১:</b> টেস্টটিউবে বর্ণহীন <b>NO<sub>3</sub><sup>−</sup></b> দ্রবণ নেওয়া হলো।";
+      sampleLayer.style.height = getCSSVar('--h-step1');
+      sampleLayer.style.backgroundColor = "rgba(224, 242, 254, 0.22)";
+      indSolution.classList.add("show");
+    }
+    else if (step === 2) {
+      statusLog.innerHTML = "<b>ধাপ ২:</b> সদ্য প্রস্তুত <b>FeSO<sub>4</sub></b> দ্রবণ যোগ করা হলো। দ্রবণটি ফ্যাকাশে সবুজ বর্ণ ধারণ করল।";
+      sampleLayer.style.height = getCSSVar('--h-step2');
+      sampleLayer.style.backgroundColor = "rgba(74, 222, 128, 0.28)";
+    }
+    else if (step === 3) {
+      statusLog.innerHTML = "<b>ধাপ ৩:</b> সাবধানে টেস্টটিউবের দেয়াল বেয়ে গাঢ় <b>H<sub>2</sub>SO<sub>4</sub></b> ঢালা হলো। সংযোগস্থলে গাঢ় বাদামি বলয় তৈরি হলো।";
+      
+      dropper.style.opacity = "1";
+      dropper.style.top = getCSSVar('--drop-pour-top');
+      dropper.style.right = getCSSVar('--drop-pour-right');
+
+      setTimeout(() => {
+        dropperTrickle.style.opacity = "1";
+        dropperTrickle.style.height = getCSSVar('--trickle-h');
+      }, 300);
+
+      setTimeout(() => {
+        acidLayer.style.height = getCSSVar('--h-acid');
+        ringLayer.style.bottom = getCSSVar('--h-acid');
+        ringLayer.style.height = getCSSVar('--h-ring');
+        ringLayer.style.opacity = "1";
+
+        indAcid.classList.add("show");
+        indRing.classList.add("show");
+      }, 650);
+
+      setTimeout(() => {
+        dropper.style.opacity = "0";
+        dropperTrickle.style.opacity = "0";
+        dropperTrickle.style.height = "0px";
+        dropper.style.top = getCSSVar('--drop-rest-top');
+        dropper.style.right = getCSSVar('--drop-rest-right');
+      }, 1700);
+    }
+  };
+
+  function refreshNav() {
+    s1.classList.toggle("active", stage === 1);
+    s2.classList.toggle("active", stage === 2);
+    s3.classList.toggle("active", stage === 3);
+
+    s1.disabled = stage >= 1;
+    s2.disabled = stage !== 1;
+    s3.disabled = stage !== 2;
+  }
+
+  window.toggleRunAuto = function() {
+    if (isAuto) {
+      clearTimeout(autoTimer);
+      isAuto = false;
+      autoBtn.textContent = "▶ সম্পূর্ণ পরীক্ষা চালান";
+      return;
+    }
+
+    isAuto = true;
+    autoBtn.textContent = "⏸ স্থগিত রাখুন";
+    resetAll();
+
+    setTimeout(() => {
+      if (!isAuto) return;
+      applyStep(1);
+      autoTimer = setTimeout(() => {
+        if (!isAuto) return;
+        applyStep(2);
+        autoTimer = setTimeout(() => {
+          if (!isAuto) return;
+          applyStep(3);
+          isAuto = false;
+          autoBtn.textContent = "▶ পুনরায় পরীক্ষা চালান";
+        }, 2000);
+      }, 1700);
+    }, 200);
+  };
+
+  window.resetAll = function() {
+    clearTimeout(autoTimer);
+    isAuto = false;
+    stage = 0;
+    autoBtn.textContent = "▶ সম্পূর্ণ পরীক্ষা চালান";
+
+    sampleLayer.style.height = "0px";
+    sampleLayer.style.backgroundColor = "rgba(224, 242, 254, 0.2)";
+    acidLayer.style.height = "0px";
+    ringLayer.style.height = "0px";
+    ringLayer.style.bottom = "0px";
+    ringLayer.style.opacity = "0";
+
+    dropper.style.opacity = "0";
+    dropper.style.top = getCSSVar('--drop-rest-top');
+    dropper.style.right = getCSSVar('--drop-rest-right');
+    dropperTrickle.style.opacity = "0";
+    dropperTrickle.style.height = "0px";
+
+    indSolution.classList.remove("show");
+    indRing.classList.remove("show");
+    indAcid.classList.remove("show");
+
+    statusLog.innerHTML = "পরীক্ষা প্রস্তুত। নিচের ধাপভিত্তিক বোতাম চাপুন অথবা সম্পূর্ণ অটো চালান।";
+    refreshNav();
+  };
+})();
+</script>
+</body>
+</html>
